@@ -3,7 +3,7 @@ library(spacedeconv)
 library(ggplot2)
 library(cowplot)
 
-dir.create("results/plots", recursive = TRUE, showWarnings = FALSE)
+dir.create("../results/plots", recursive = TRUE, showWarnings = FALSE)
 
 slides <- c("andersson", "1142243F", "1160920F", "4465", "44971", "4290", "4535")
 title_size <- 18
@@ -27,9 +27,9 @@ Normalization and deconvolution follow the spacedeconv paper scripts:
 for (slide in slides) {
   cat("\n### Slide ", slide, "\n\n", sep = "")
 
-  est <- readRDS(file.path("results/objects", paste0("deconv_estimate_", slide, ".rds")))
-  qua <- readRDS(file.path("results/objects", paste0("deconv_quantiseq_", slide, ".rds")))
-  epi <- readRDS(file.path("results/objects", paste0("deconv_epic_", slide, ".rds")))
+  est <- readRDS(file.path("../results/objects", paste0("deconv_estimate_", slide, ".rds")))
+  qua <- readRDS(file.path("../results/objects", paste0("deconv_quantiseq_", slide, ".rds")))
+  epi <- readRDS(file.path("../results/objects", paste0("deconv_epic_", slide, ".rds")))
 
   p_tumor <- plot_spatial(
     est,
@@ -69,7 +69,7 @@ for (slide in slides) {
   print(panel)
 
   ggsave(
-    filename = file.path("results/plots", paste0("slide_", slide, "_targets.png")),
+    filename = file.path("../results/plots", paste0("slide_", slide, "_targets.png")),
     plot = panel,
     width = 16,
     height = 5,
@@ -83,42 +83,42 @@ for (slide in slides) {
     ## 
     ## ### Slide andersson
 
-![](/gpfs/gpfs1/scratch/c9881013/felix_breast_cancer/breast_cancer/report/breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-1.png)<!-- -->
+![](breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-1.png)<!-- -->
 
     ## 
     ## ### Slide 1142243F
 
-![](/gpfs/gpfs1/scratch/c9881013/felix_breast_cancer/breast_cancer/report/breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-2.png)<!-- -->
+![](breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-2.png)<!-- -->
 
     ## 
     ## ### Slide 1160920F
 
-![](/gpfs/gpfs1/scratch/c9881013/felix_breast_cancer/breast_cancer/report/breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-3.png)<!-- -->
+![](breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-3.png)<!-- -->
 
     ## 
     ## ### Slide 4465
 
-![](/gpfs/gpfs1/scratch/c9881013/felix_breast_cancer/breast_cancer/report/breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-4.png)<!-- -->
+![](breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-4.png)<!-- -->
 
     ## 
     ## ### Slide 44971
 
-![](/gpfs/gpfs1/scratch/c9881013/felix_breast_cancer/breast_cancer/report/breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-5.png)<!-- -->
+![](breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-5.png)<!-- -->
 
     ## 
     ## ### Slide 4290
 
-![](/gpfs/gpfs1/scratch/c9881013/felix_breast_cancer/breast_cancer/report/breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-6.png)<!-- -->
+![](breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-6.png)<!-- -->
 
     ## 
     ## ### Slide 4535
 
-![](/gpfs/gpfs1/scratch/c9881013/felix_breast_cancer/breast_cancer/report/breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-7.png)<!-- -->
+![](breast_spacedeconv_analysis_files/figure-gfm/per-slide-plots-7.png)<!-- -->
 
 ## Combined Table Preview
 
 ``` r
-tab <- read.csv("results/tables/targets_all_slides.csv")
+tab <- read.csv("../results/tables/targets_all_slides.csv")
 knitr::kable(head(tab, 20))
 ```
 

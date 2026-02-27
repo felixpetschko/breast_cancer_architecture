@@ -4,8 +4,12 @@ suppressPackageStartupMessages({
   library(rmarkdown)
 })
 
+old_wd <- getwd()
+on.exit(setwd(old_wd), add = TRUE)
+
+setwd("report")
+
 rmarkdown::render(
-  input = "report/breast_spacedeconv_analysis.Rmd",
-  output_file = "breast_spacedeconv_analysis.md",
-  output_dir = "report"
+  input = "breast_spacedeconv_analysis.Rmd",
+  output_file = "breast_spacedeconv_analysis.md"
 )
