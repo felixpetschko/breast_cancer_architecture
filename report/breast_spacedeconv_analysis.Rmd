@@ -1,0 +1,101 @@
+---
+title: "Breast Cancer Spacedeconv Analysis (7 Slides)"
+output:
+  md_document:
+    variant: gfm
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(spacedeconv)
+library(ggplot2)
+library(cowplot)
+
+dir.create("results/plots", recursive = TRUE, showWarnings = FALSE)
+
+slides <- c("andersson", "1142243F", "1160920F", "4465", "44971", "4290", "4535")
+title_size <- 18
+font_size <- 14
+legend_size <- 14
+```
+
+## Methods
+
+Normalization and deconvolution follow the spacedeconv paper scripts:
+
+- `preprocess(min_umi = 87)`
+- `spacedeconv::normalize(...)`
+- `deconvolute(method = "estimate", assay_sp = "cpm")`
+- `deconvolute(method = "quantiseq", assay_sp = "cpm", tumor = TRUE)`
+- `deconvolute(method = "epic", assay_sp = "cpm", tumor = TRUE)`
+
+## Per-slide Spatial Results
+
+```{r per-slide-plots, message=FALSE, warning=FALSE, fig.width=12, fig.height=4}
+for (slide in slides) {
+  cat("\n### Slide ", slide, "\n\n", sep = "")
+
+  est <- readRDS(file.path("results/objects", paste0("deconv_estimate_", slide, ".rds")))
+  qua <- readRDS(file.path("results/objects", paste0("deconv_quantiseq_", slide, ".rds")))
+  epi <- readRDS(file.path("results/objects", paste0("deconv_epic_", slide, ".rds")))
+
+  p_tumor <- plot_spatial(
+    est,
+    result = "estimate_tumor.purity",
+    smooth = TRUE,
+    density = FALSE,
+    title = paste0(slide, " - Tumor Purity (ESTIMATE)"),
+    title_size = title_size,
+    font_size = font_size,
+    legend_size = legend_size
+  )
+
+  p_cd8 <- plot_spatial(
+    qua,
+    result = "quantiseq_T.cell.CD8.",
+    smooth = TRUE,
+    density = FALSE,
+    shift_positive = FALSE,
+    title = paste0(slide, " - CD8 T cells (quanTIseq)"),
+    title_size = title_size,
+    font_size = font_size,
+    legend_size = legend_size
+  )
+
+  p_caf <- plot_spatial(
+    epi,
+    result = "epic_Cancer.associated.fibroblast",
+    smooth = TRUE,
+    density = FALSE,
+    title = paste0(slide, " - CAFs (EPIC)"),
+    title_size = title_size,
+    font_size = font_size,
+    legend_size = legend_size
+  )
+
+  panel <- cowplot::plot_grid(p_tumor, p_cd8, p_caf, ncol = 3, align = "hv")
+  print(panel)
+
+  ggsave(
+    filename = file.path("results/plots", paste0("slide_", slide, "_targets.png")),
+    plot = panel,
+    width = 16,
+    height = 5,
+    units = "in",
+    dpi = 300,
+    bg = "white"
+  )
+}
+```
+
+## Combined Table Preview
+
+```{r combined-table, message=FALSE, warning=FALSE}
+tab <- read.csv("results/tables/targets_all_slides.csv")
+knitr::kable(head(tab, 20))
+```
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```
