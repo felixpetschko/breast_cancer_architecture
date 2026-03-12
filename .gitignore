@@ -1,3 +1,14 @@
 
 # Omnipath logs/cache
 omnipathr-log/
+__pycache__/
+*.pyc
+
+# Large raw/reference data artifacts
+data/reference/GSE176078_Wu_etal_2021_BRCA_scRNASeq.tar.gz
+data/reference/Wu_etal_2021_BRCA_scRNASeq/
+data/reference/wu_raw.h5ad
+data/reference/wu_breast_atlas_rectangle.h5ad
+
+# Large Rectangle intermediates
+results/intermediate/

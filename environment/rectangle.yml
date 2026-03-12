@@ -1,0 +1,14 @@
+name: breast-cancer-rectangle-env
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - pip
+  - pip:
+      - rectanglepy
+      - anndata
+      - pandas
+      - numpy
+      - scipy
+      - pyyaml
+      - pyarrow

@@ -1,0 +1,7 @@
+reference_path: data/reference/wu_breast_atlas_rectangle.h5ad
+cell_type_column: celltype_minor
+selected_cell_types: []
+correct_mrna_bias: true
+n_cpus: null
+gene_symbol_policy: upper
+min_genes_overlap: 500

@@ -20,8 +20,7 @@ legend_size <- 14
 
 ## Methods
 
-Normalization and deconvolution follow the spacedeconv paper scripts:
-Execution of these method calls is implemented in `scripts/run_spacedeconv.R`.
+Normalization and deconvolution follow the spacedeconv paper scripts; execution is implemented in `scripts/run_spacedeconv.R`.
 
 - `preprocess(min_umi = 87)`
 - `spacedeconv::normalize(...)`
@@ -29,9 +28,15 @@ Execution of these method calls is implemented in `scripts/run_spacedeconv.R`.
 - `deconvolute(method = "quantiseq", assay_sp = "cpm", tumor = TRUE)`
 - `deconvolute(method = "epic", assay_sp = "cpm", tumor = TRUE)`
 
+Rectangle integration is executed by:
+
+- `scripts/export_spatial_for_rectangle.R`
+- `scripts/run_rectangle.py`
+- `scripts/merge_rectangle_results.R`
+
 ## Per-slide Spatial Results
 
-```{r per-slide-plots, message=FALSE, warning=FALSE, fig.width=12, fig.height=4}
+```{r per-slide-plots, message=FALSE, warning=FALSE, fig.width=16, fig.height=6}
 for (slide in slides) {
   cat("\n### Slide ", slide, "\n\n", sep = "")
 
@@ -73,18 +78,103 @@ for (slide in slides) {
     legend_size = legend_size
   )
 
-  panel <- cowplot::plot_grid(p_tumor, p_cd8, p_caf, ncol = 3, align = "hv")
+  rect_csv <- file.path("../results/objects", paste0("deconv_rectangle_", slide, ".csv"))
+  if (file.exists(rect_csv)) {
+    rect <- read.csv(rect_csv, stringsAsFactors = FALSE, check.names = FALSE)
+    rect_cols <- setdiff(colnames(rect), "spot_id")
+
+    if (length(rect_cols) >= 2) {
+      colData(est)$rectangle_target_1 <- rect[[rect_cols[[1]]]][match(colnames(est), rect$spot_id)]
+      colData(est)$rectangle_target_2 <- rect[[rect_cols[[2]]]][match(colnames(est), rect$spot_id)]
+
+      p_rect_1 <- plot_spatial(
+        est,
+        result = "rectangle_target_1",
+        smooth = TRUE,
+        density = FALSE,
+        shift_positive = FALSE,
+        title = paste0(slide, " - Rectangle: ", rect_cols[[1]]),
+        title_size = title_size,
+        font_size = font_size,
+        legend_size = legend_size
+      )
+
+      p_rect_2 <- plot_spatial(
+        est,
+        result = "rectangle_target_2",
+        smooth = TRUE,
+        density = FALSE,
+        shift_positive = FALSE,
+        title = paste0(slide, " - Rectangle: ", rect_cols[[2]]),
+        title_size = title_size,
+        font_size = font_size,
+        legend_size = legend_size
+      )
+
+      panel <- cowplot::plot_grid(p_tumor, p_cd8, p_caf, p_rect_1, p_rect_2, ncol = 5, align = "hv")
+    } else {
+      panel <- cowplot::plot_grid(p_tumor, p_cd8, p_caf, ncol = 3, align = "hv")
+    }
+  } else {
+    panel <- cowplot::plot_grid(p_tumor, p_cd8, p_caf, ncol = 3, align = "hv")
+  }
+
   print(panel)
 
   ggsave(
     filename = file.path("../results/plots", paste0("slide_", slide, "_targets.png")),
     plot = panel,
-    width = 16,
+    width = 20,
     height = 5,
     units = "in",
     dpi = 300,
     bg = "white"
   )
+}
+```
+
+## Rectangle vs Existing Methods
+
+```{r rectangle-comparison, message=FALSE, warning=FALSE}
+tab <- read.csv("../results/tables/targets_all_slides.csv", stringsAsFactors = FALSE, check.names = FALSE)
+rect_cols <- grep("^rectangle_", colnames(tab), value = TRUE)
+
+if (length(rect_cols) == 0) {
+  cat("Rectangle columns not found in combined table. Run merge script first.")
+} else {
+  pick_col <- function(patterns) {
+    for (p in patterns) {
+      hit <- grep(p, rect_cols, value = TRUE, ignore.case = TRUE)
+      if (length(hit) > 0) {
+        return(hit[[1]])
+      }
+    }
+    NA_character_
+  }
+
+  rect_cd8 <- pick_col(c("cd8", "t.cell", "cytotoxic"))
+  rect_caf <- pick_col(c("caf", "fibro", "fibroblast", "stromal"))
+
+  out <- data.frame(
+    metric = c("CD8 method correlation", "CAF method correlation"),
+    rectangle_column = c(rect_cd8, rect_caf),
+    correlation = c(NA_real_, NA_real_),
+    stringsAsFactors = FALSE
+  )
+
+  if (!is.na(rect_cd8) && "cd8_quantiseq" %in% colnames(tab)) {
+    out$correlation[out$metric == "CD8 method correlation"] <- suppressWarnings(
+      cor(tab[[rect_cd8]], tab$cd8_quantiseq, use = "pairwise.complete.obs")
+    )
+  }
+
+  if (!is.na(rect_caf) && "caf_epic" %in% colnames(tab)) {
+    out$correlation[out$metric == "CAF method correlation"] <- suppressWarnings(
+      cor(tab[[rect_caf]], tab$caf_epic, use = "pairwise.complete.obs")
+    )
+  }
+
+  knitr::kable(out)
 }
 ```
 
