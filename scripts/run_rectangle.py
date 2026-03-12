@@ -121,21 +121,47 @@ def extract_fraction_table(result: Any) -> pd.DataFrame:
     if isinstance(result, pd.DataFrame):
         return result
 
+    if isinstance(result, (list, tuple)):
+        for item in result:
+            try:
+                return extract_fraction_table(item)
+            except TypeError:
+                continue
+
     if isinstance(result, dict):
         for key in ["fractions", "cell_fractions", "proportions", "deconv", "weights"]:
             value = result.get(key)
-            if isinstance(value, pd.DataFrame):
-                return value
+            if value is not None:
+                try:
+                    return extract_fraction_table(value)
+                except TypeError:
+                    continue
 
     for attr in ["fractions", "cell_fractions", "proportions", "deconv", "weights", "result"]:
         if hasattr(result, attr):
             value = getattr(result, attr)
-            if isinstance(value, pd.DataFrame):
-                return value
+            if value is not None:
+                try:
+                    return extract_fraction_table(value)
+                except TypeError:
+                    continue
+
+    if hasattr(result, "to_pandas"):
+        try:
+            out = result.to_pandas()
+            if isinstance(out, pd.DataFrame):
+                return out
+        except Exception:
+            pass
+
+    if hasattr(result, "shape") and hasattr(result, "__array__"):
+        arr = result.__array__()
+        if arr.ndim == 2:
+            return pd.DataFrame(arr)
 
     raise TypeError(
         "Could not extract fractions DataFrame from Rectangle result. "
-        "Update extract_fraction_table for your rectanglepy version."
+        f"Update extract_fraction_table for your rectanglepy version. Got type: {type(result)}"
     )
 
 
@@ -210,8 +236,9 @@ def main() -> None:
     )
 
     fractions = extract_fraction_table(deconv_result).copy()
-    fractions.index.name = "spot_id"
-    fractions = fractions.reset_index()
+    if "spot_id" not in fractions.columns:
+        fractions.index.name = "spot_id"
+        fractions = fractions.reset_index()
 
     output_path = Path(args.out_csv)
     output_path.parent.mkdir(parents=True, exist_ok=True)
