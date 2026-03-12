@@ -42,6 +42,37 @@ PY_ENV_NAME=breast-cancer-rectangle-env \
 scripts/run_all_with_rectangle.sh --mode all
 ```
 
+## SLURM (easy)
+
+Submit with one command:
+
+```bash
+# Full pipeline
+scripts/submit_slurm.sh --mode all
+
+# Only spacedeconv
+scripts/submit_slurm.sh --mode spacedeconv
+
+# Only rectangle (and use 8 CPUs inside Rectangle deconvolution)
+scripts/submit_slurm.sh --mode rectangle --n-cpus 8
+
+# Quick test queue run (partition=test, max walltime 10:00:00)
+scripts/submit_slurm.sh --mode rectangle --test --time 10:00:00
+```
+
+Common resource flags:
+
+```bash
+scripts/submit_slurm.sh \
+  --mode all \
+  --cpus 32 \
+  --mem 128G \
+  --time 48:00:00 \
+  --account biology
+```
+
+Logs are written to `logs/slurm/%x_%j.out` and `logs/slurm/%x_%j.err`.
+
 ## Rectangle Setup
 
 1. Create/activate Rectangle Python environment:
