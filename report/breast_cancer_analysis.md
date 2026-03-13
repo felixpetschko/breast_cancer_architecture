@@ -31,8 +31,11 @@ Rectangle integration is executed by:
 ## Per-slide Spatial Results
 
 ``` r
-for (slide in slides) {
-  cat("\n### Slide ", slide, "\n\n", sep = "")
+for (i in seq_along(slides)) {
+  slide <- slides[[i]]
+  if (i > 1) {
+    cat("\n\n---\n\n")
+  }
 
   est <- readRDS(file.path("../results/objects", paste0("deconv_estimate_", slide, ".rds")))
   qua <- readRDS(file.path("../results/objects", paste0("deconv_quantiseq_", slide, ".rds")))
@@ -199,24 +202,27 @@ for (slide in slides) {
 }
 ```
 
-### Slide andersson
-
-### Slide 1142243F
+------------------------------------------------------------------------
 
 ![](breast_cancer_analysis_files/figure-gfm/per-slide-plots-1.png)<!-- -->
-\### Slide 1160920F
+
+------------------------------------------------------------------------
 
 ![](breast_cancer_analysis_files/figure-gfm/per-slide-plots-2.png)<!-- -->
-\### Slide 4465
+
+------------------------------------------------------------------------
 
 ![](breast_cancer_analysis_files/figure-gfm/per-slide-plots-3.png)<!-- -->
-\### Slide 44971
+
+------------------------------------------------------------------------
 
 ![](breast_cancer_analysis_files/figure-gfm/per-slide-plots-4.png)<!-- -->
-\### Slide 4290
+
+------------------------------------------------------------------------
 
 ![](breast_cancer_analysis_files/figure-gfm/per-slide-plots-5.png)<!-- -->
-\### Slide 4535
+
+------------------------------------------------------------------------
 
 ![](breast_cancer_analysis_files/figure-gfm/per-slide-plots-6.png)<!-- -->![](breast_cancer_analysis_files/figure-gfm/per-slide-plots-7.png)<!-- -->
 

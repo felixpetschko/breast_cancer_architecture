@@ -36,9 +36,12 @@ Rectangle integration is executed by:
 
 ## Per-slide Spatial Results
 
-```{r per-slide-plots, message=FALSE, warning=FALSE, results='asis', fig.width=16, fig.height=6}
-for (slide in slides) {
-  cat("\n### Slide ", slide, "\n\n", sep = "")
+```{r per-slide-plots, message=FALSE, warning=FALSE, results='asis', fig.width=16, fig.height=14}
+for (i in seq_along(slides)) {
+  slide <- slides[[i]]
+  if (i > 1) {
+    cat("\n\n---\n\n")
+  }
 
   est <- readRDS(file.path("../results/objects", paste0("deconv_estimate_", slide, ".rds")))
   qua <- readRDS(file.path("../results/objects", paste0("deconv_quantiseq_", slide, ".rds")))
