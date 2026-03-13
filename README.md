@@ -115,6 +115,10 @@ python3 scripts/prepare_wu_reference.py \
 ```
 4. Verify `config/rectangle.yaml` (reference path + label column).
    The `excluded_cell_types` list in that config is applied during reference preparation.
+   If you change this list, force rebuild by removing generated files once:
+```bash
+rm -f data/reference/wu_raw.h5ad data/reference/wu_breast_atlas_rectangle.h5ad
+```
 
 ## Outputs
 
@@ -131,3 +135,11 @@ Rectangle downstream aggregates used for plotting/tables:
 - `rectangle_cd8 = T cells CD8+`
 - `rectangle_caf = CAFs MSC iCAF-like + CAFs myCAF-like`
 - `rectangle_tumor = Cancer Her2 SC + Cancer LumB SC + Cancer Basal SC + Cancer LumA SC + Unknown`
+
+## Report Only
+
+To re-render the report from existing results:
+
+```bash
+conda run --no-capture-output -n spacedeconv-env Rscript scripts/render_report.R
+```
