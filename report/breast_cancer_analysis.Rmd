@@ -99,9 +99,9 @@ for (slide in slides) {
         rect[["Cancer Basal SC"]] + rect[["Cancer LumA SC"]] + rect[["Unknown"]]
 
       idx <- match(colnames(est), rect$spot_id)
-      colData(est)$rectangle_cd8 <- rect_cd8[idx]
-      colData(est)$rectangle_caf <- rect_caf[idx]
-      colData(est)$rectangle_tumor <- rect_tumor[idx]
+      SummarizedExperiment::colData(est)$rectangle_cd8 <- rect_cd8[idx]
+      SummarizedExperiment::colData(est)$rectangle_caf <- rect_caf[idx]
+      SummarizedExperiment::colData(est)$rectangle_tumor <- rect_tumor[idx]
 
       p_rect_cd8 <- plot_spatial(
         est,
