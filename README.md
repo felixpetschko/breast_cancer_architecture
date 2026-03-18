@@ -5,6 +5,7 @@ This repository runs a breast-cancer spatial deconvolution analysis for the 7 sl
 - ESTIMATE tumor purity
 - quanTIseq CD8+ T cells
 - EPIC CAFs
+- EPIC B cells
 - Rectangle cell fractions (single-cell informed, using a Wu et al. reference)
 
 ## Data

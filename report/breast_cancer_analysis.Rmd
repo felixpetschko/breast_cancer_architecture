@@ -92,7 +92,10 @@ for (i in seq_along(slides)) {
       "Cancer LumB SC",
       "Cancer Basal SC",
       "Cancer LumA SC",
-      "Unknown"
+      "Unknown",
+      "B cells Memory",
+      "B cells Naive",
+      "Plasmablasts"
     )
 
     if (all(req %in% colnames(rect))) {
@@ -100,11 +103,13 @@ for (i in seq_along(slides)) {
       rect_caf <- rect[["CAFs MSC iCAF-like"]] + rect[["CAFs myCAF-like"]]
       rect_tumor <- rect[["Cancer Her2 SC"]] + rect[["Cancer LumB SC"]] +
         rect[["Cancer Basal SC"]] + rect[["Cancer LumA SC"]] + rect[["Unknown"]]
+      rect_bcells <- rect[["B cells Memory"]] + rect[["B cells Naive"]] + rect[["Plasmablasts"]]
 
       idx <- match(colnames(est), rect$spot_id)
       SummarizedExperiment::colData(est)$rectangle_cd8 <- rect_cd8[idx]
       SummarizedExperiment::colData(est)$rectangle_caf <- rect_caf[idx]
       SummarizedExperiment::colData(est)$rectangle_tumor <- rect_tumor[idx]
+      SummarizedExperiment::colData(est)$rectangle_bcells <- rect_bcells[idx]
 
       p_rect_cd8 <- plot_spatial(
         est,
@@ -142,9 +147,34 @@ for (i in seq_along(slides)) {
         legend_size = legend_size
       )
 
+      p_bcells <- plot_spatial(
+        epi,
+        result = "epic_B.cell",
+        smooth = TRUE,
+        density = FALSE,
+        shift_positive = FALSE,
+        title = paste0(slide, " - B cells (EPIC)"),
+        title_size = title_size,
+        font_size = font_size,
+        legend_size = legend_size
+      )
+
+      p_rect_bcells <- plot_spatial(
+        est,
+        result = "rectangle_bcells",
+        smooth = TRUE,
+        density = FALSE,
+        shift_positive = FALSE,
+        title = paste0(slide, " - Rectangle B cells"),
+        title_size = title_size,
+        font_size = font_size,
+        legend_size = legend_size
+      )
+
       first_tumor <- SummarizedExperiment::colData(est)$estimate_tumor.purity
       first_cd8 <- SummarizedExperiment::colData(qua)$quantiseq_T.cell.CD8.
       first_caf <- SummarizedExperiment::colData(epi)$epic_Cancer.associated.fibroblast
+      first_bcells <- SummarizedExperiment::colData(epi)$epic_B.cell
 
       mk_scatter <- function(x, y, title, xlab, ylab) {
         d <- data.frame(x = as.numeric(x), y = as.numeric(y))
@@ -180,18 +210,46 @@ for (i in seq_along(slides)) {
         "1st-gen CAF (EPIC)",
         "2nd-gen CAF (Rectangle)"
       )
+      p_sc_bcells <- mk_scatter(
+        first_bcells, rect_bcells[idx],
+        paste0(slide, " - B cells: 1st-gen vs Rectangle"),
+        "1st-gen B cells (EPIC)",
+        "2nd-gen B cells (Rectangle)"
+      )
 
       panel <- cowplot::plot_grid(
-        p_tumor, p_cd8, p_caf,
-        p_rect_tumor, p_rect_cd8, p_rect_caf,
-        p_sc_tumor, p_sc_cd8, p_sc_caf,
-        ncol = 3, align = "hv"
+        p_tumor, p_cd8, p_caf, p_bcells,
+        p_rect_tumor, p_rect_cd8, p_rect_caf, p_rect_bcells,
+        p_sc_tumor, p_sc_cd8, p_sc_caf, p_sc_bcells,
+        ncol = 4, align = "hv"
       )
     } else {
-      panel <- cowplot::plot_grid(p_tumor, p_cd8, p_caf, ncol = 3, align = "hv")
+      p_bcells <- plot_spatial(
+        epi,
+        result = "epic_B.cell",
+        smooth = TRUE,
+        density = FALSE,
+        shift_positive = FALSE,
+        title = paste0(slide, " - B cells (EPIC)"),
+        title_size = title_size,
+        font_size = font_size,
+        legend_size = legend_size
+      )
+      panel <- cowplot::plot_grid(p_tumor, p_cd8, p_caf, p_bcells, ncol = 4, align = "hv")
     }
   } else {
-    panel <- cowplot::plot_grid(p_tumor, p_cd8, p_caf, ncol = 3, align = "hv")
+    p_bcells <- plot_spatial(
+      epi,
+      result = "epic_B.cell",
+      smooth = TRUE,
+      density = FALSE,
+      shift_positive = FALSE,
+      title = paste0(slide, " - B cells (EPIC)"),
+      title_size = title_size,
+      font_size = font_size,
+      legend_size = legend_size
+    )
+    panel <- cowplot::plot_grid(p_tumor, p_cd8, p_caf, p_bcells, ncol = 4, align = "hv")
   }
 
   print(panel)
@@ -199,7 +257,7 @@ for (i in seq_along(slides)) {
   ggsave(
     filename = file.path("../results/plots", paste0("slide_", slide, "_targets.png")),
     plot = panel,
-    width = 16,
+    width = 20,
     height = 14,
     units = "in",
     dpi = 300,
@@ -229,11 +287,12 @@ if (length(rect_cols) == 0) {
 
   rect_cd8 <- pick_col(c("cd8", "t.cell", "cytotoxic"))
   rect_caf <- pick_col(c("caf", "fibro", "fibroblast", "stromal"))
+  rect_bcells <- pick_col(c("bcells", "b.cell", "plasmablast"))
 
   out <- data.frame(
-    metric = c("CD8 method correlation", "CAF method correlation"),
-    rectangle_column = c(rect_cd8, rect_caf),
-    correlation = c(NA_real_, NA_real_),
+    metric = c("CD8 method correlation", "CAF method correlation", "B-cell method correlation"),
+    rectangle_column = c(rect_cd8, rect_caf, rect_bcells),
+    correlation = c(NA_real_, NA_real_, NA_real_),
     stringsAsFactors = FALSE
   )
 
@@ -246,6 +305,12 @@ if (length(rect_cols) == 0) {
   if (!is.na(rect_caf) && "caf_epic" %in% colnames(tab)) {
     out$correlation[out$metric == "CAF method correlation"] <- suppressWarnings(
       cor(tab[[rect_caf]], tab$caf_epic, use = "pairwise.complete.obs")
+    )
+  }
+
+  if (!is.na(rect_bcells) && "epic_B.cell" %in% colnames(tab)) {
+    out$correlation[out$metric == "B-cell method correlation"] <- suppressWarnings(
+      cor(tab[[rect_bcells]], tab[["epic_B.cell"]], use = "pairwise.complete.obs")
     )
   }
 
