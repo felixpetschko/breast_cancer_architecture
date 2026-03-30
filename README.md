@@ -105,13 +105,19 @@ The R environment `spacedeconv-env` can be created based on the `environment.yml
 
 The Rectangle Python environment used here is `breast-cancer-rectangle-env`.
 
-## Rectangle Setup
-
-1. Create/activate Rectangle Python environment:
 ```bash
 conda env create -f environment/rectangle.yml
 conda activate breast-cancer-rectangle-env
 ```
+
+## Rectangle Setup
+
+1. Activate the Rectangle Python environment:
+
+```bash
+conda activate breast-cancer-rectangle-env
+```
+
 2. Keep the 4 Wu raw files in `data/spatial/wu_reference/`:
 
 ```bash
