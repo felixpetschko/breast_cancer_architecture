@@ -15,13 +15,14 @@ TEST_PARTITION="false"
 
 R_ENV_NAME="${R_ENV_NAME:-spacedeconv-env}"
 PY_ENV_NAME="${PY_ENV_NAME:-breast-cancer-rectangle-env}"
+IMMUNEDECONV_ENV_NAME="${IMMUNEDECONV_ENV_NAME:-immunedeconv-env}"
 
 usage() {
   cat <<USAGE
 Usage: scripts/submit_slurm.sh [options]
 
 Options:
-  --mode <all|spacedeconv|rectangle>  Pipeline mode (default: all)
+  --mode <all|spacedeconv|rectangle|bulk-all|bulk-prepare|bulk-immunedeconv|bulk-rectangle|bulk-merge|bulk-report>  Pipeline mode (default: all)
   --cpus <int>                        SLURM cpus-per-task (default: 16)
   --mem <size>                        SLURM memory (default: 64G)
   --time <HH:MM:SS>                   SLURM walltime (default: 24:00:00)
@@ -37,7 +38,7 @@ Options:
 Env passthrough (optional):
   CONFIG_PATH, REFERENCE_H5AD, CELL_TYPE_COL,
   GENE_SYMBOL_POLICY, CORRECT_MRNA_BIAS, MIN_GENES_OVERLAP,
-  R_ENV_NAME, PY_ENV_NAME
+  R_ENV_NAME, PY_ENV_NAME, IMMUNEDECONV_ENV_NAME
 USAGE
 }
 
@@ -59,10 +60,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ "${MODE}" != "all" && "${MODE}" != "spacedeconv" && "${MODE}" != "rectangle" ]]; then
-  echo "Invalid --mode: ${MODE}"
-  exit 1
-fi
+case "${MODE}" in
+  all|spacedeconv|rectangle|bulk-all|bulk-prepare|bulk-immunedeconv|bulk-rectangle|bulk-merge|bulk-report)
+    ;;
+  *)
+    echo "Invalid --mode: ${MODE}"
+    exit 1
+    ;;
+esac
 
 if [[ -z "${JOB_NAME}" ]]; then
   JOB_NAME="breast-${MODE}"
@@ -91,6 +96,7 @@ exports=(
   "MODE=${MODE}"
   "R_ENV_NAME=${R_ENV_NAME}"
   "PY_ENV_NAME=${PY_ENV_NAME}"
+  "IMMUNEDECONV_ENV_NAME=${IMMUNEDECONV_ENV_NAME}"
 )
 
 for var in CONFIG_PATH REFERENCE_H5AD CELL_TYPE_COL GENE_SYMBOL_POLICY CORRECT_MRNA_BIAS MIN_GENES_OVERLAP; do

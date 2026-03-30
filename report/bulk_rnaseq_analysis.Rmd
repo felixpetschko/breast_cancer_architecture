@@ -1,0 +1,107 @@
+---
+title: "Breast Cancer Architecture Bulk RNA-seq Analysis (TCGA-BRCA)"
+output:
+  md_document:
+    variant: gfm
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(knitr)
+
+dir.create("../results/bulk_rnaseq/plots", recursive = TRUE, showWarnings = FALSE)
+raw_tab <- read.csv("../results/bulk_rnaseq/tables/tcga_brca_all_methods_raw.csv", check.names = FALSE)
+tab <- read.csv("../results/bulk_rnaseq/tables/tcga_brca_all_methods_aggregated.csv", check.names = FALSE)
+```
+
+## Methods
+
+- Input dataset: `data/bulk_rnaseq/tcga_brca/brca_tpm_all_symbols.csv`
+- Samples processed: all samples in the TPM matrix
+- 1st gen methods were run through `immunedeconv`:
+  - `estimate`
+  - `quantiseq`
+  - `epic`
+- 2nd gen method:
+  - `Rectangle`
+- Rectangle used the existing Wu reference and current `config/rectangle.yaml`
+
+## Dataset Summary
+
+```{r dataset-summary, message=FALSE, warning=FALSE}
+summary_df <- data.frame(
+  metric = c("n samples", "n columns raw merged", "n columns aggregated"),
+  value = c(nrow(tab), ncol(raw_tab), ncol(tab))
+)
+kable(summary_df)
+```
+
+```{r metadata-summary, message=FALSE, warning=FALSE}
+meta_cols <- intersect(c("sample_type", "PAM50"), colnames(tab))
+if (length(meta_cols) == 0) {
+  cat("No metadata columns available in aggregated table.")
+} else {
+  for (col in meta_cols) {
+    cat("\n###", col, "\n\n")
+    kable(head(sort(table(tab[[col]]), decreasing = TRUE), 20))
+  }
+}
+```
+
+## Raw Output Preview
+
+```{r raw-preview, message=FALSE, warning=FALSE}
+kable(head(raw_tab, 10))
+```
+
+## Aggregated Comparison
+
+```{r comparison-summary, message=FALSE, warning=FALSE}
+mk_scatter <- function(df, x, y, title, xlab, ylab, out_png) {
+  d <- data.frame(x = as.numeric(df[[x]]), y = as.numeric(df[[y]]))
+  d <- d[complete.cases(d), , drop = FALSE]
+  r <- if (nrow(d) > 1) cor(d$x, d$y, method = "pearson") else NA_real_
+  p <- ggplot(d, aes(x = x, y = y)) +
+    geom_point(size = 0.6, alpha = 0.35) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+    labs(
+      title = title,
+      subtitle = paste0("Pearson r = ", ifelse(is.na(r), "NA", sprintf("%.3f", r))),
+      x = xlab,
+      y = ylab
+    ) +
+    theme_bw(base_size = 11)
+  ggsave(out_png, p, width = 6, height = 5, dpi = 300, bg = "white")
+  print(p)
+  invisible(r)
+}
+
+comparisons <- data.frame(
+  metric = c("Tumor", "CD8", "CAF", "B cells"),
+  x = c("estimate_tumor", "quantiseq_cd8", "epic_caf", "epic_bcells"),
+  y = c("rectangle_tumor", "rectangle_cd8", "rectangle_caf", "rectangle_bcells"),
+  stringsAsFactors = FALSE
+)
+
+cors <- numeric(nrow(comparisons))
+for (i in seq_len(nrow(comparisons))) {
+  row <- comparisons[i, ]
+  png_path <- file.path("../results/bulk_rnaseq/plots", paste0("tcga_brca_", make.names(row$metric), "_scatter.png"))
+  cors[[i]] <- mk_scatter(
+    tab, row$x, row$y,
+    paste0("TCGA-BRCA ", row$metric, ": 1st-gen vs Rectangle"),
+    paste0("1st-gen ", row$metric),
+    paste0("Rectangle ", row$metric),
+    png_path
+  )
+}
+
+comparisons$pearson_r <- cors
+kable(comparisons[, c("metric", "x", "y", "pearson_r")])
+```
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```

@@ -8,6 +8,8 @@ This repository runs a breast-cancer spatial deconvolution analysis for the 7 sl
 - EPIC B cells
 - Rectangle cell fractions (single-cell informed, using a Wu et al. reference)
 
+It also contains a separate bulk RNA-seq workflow for TCGA-BRCA using `immunedeconv` and Rectangle.
+
 ## Data
 
 Required spatial slide objects are stored in `data/spatial/slides/`:
@@ -56,6 +58,20 @@ scripts/run_all_with_rectangle.sh --mode spacedeconv
 scripts/run_all_with_rectangle.sh --mode rectangle
 ```
 
+Bulk TCGA-BRCA workflow:
+
+```bash
+# Full bulk workflow: prepare + immunedeconv + Rectangle + merge + report
+scripts/run_bulk_tcga_brca.sh --mode all
+
+# Individual bulk stages
+scripts/run_bulk_tcga_brca.sh --mode prepare
+scripts/run_bulk_tcga_brca.sh --mode immunedeconv
+scripts/run_bulk_tcga_brca.sh --mode rectangle
+scripts/run_bulk_tcga_brca.sh --mode merge
+scripts/run_bulk_tcga_brca.sh --mode report
+```
+
 The runner prints live progress from R/Python commands via `conda run --no-capture-output`.
 
 If needed, override env names:
@@ -64,6 +80,9 @@ If needed, override env names:
 R_ENV_NAME=spacedeconv-env \
 PY_ENV_NAME=breast-cancer-rectangle-env \
 scripts/run_all_with_rectangle.sh --mode all
+
+IMMUNEDECONV_ENV_NAME=immunedeconv-env \
+scripts/run_bulk_tcga_brca.sh --mode immunedeconv
 ```
 
 ## SLURM (easy)
@@ -79,6 +98,12 @@ scripts/submit_slurm.sh --mode spacedeconv
 
 # Only rectangle (and use 8 CPUs inside Rectangle deconvolution)
 scripts/submit_slurm.sh --mode rectangle --n-cpus 8
+
+# Bulk TCGA-BRCA full workflow
+scripts/submit_slurm.sh --mode bulk-all
+
+# Bulk immunedeconv only
+scripts/submit_slurm.sh --mode bulk-immunedeconv
 
 # Quick test queue run (partition=test, max walltime 10:00:00)
 scripts/submit_slurm.sh --mode rectangle --test --time 10:00:00
@@ -115,6 +140,8 @@ The `immunedeconv` R environment can be created like this:
 ```bash
 conda create -n immunedeconv-env -c conda-forge -c bioconda r-base=4.3.3 r-immunedeconv
 ```
+
+The bulk workflow runs `immunedeconv` only through `immunedeconv-env`.
 
 ## Rectangle Setup
 
@@ -164,6 +191,10 @@ rm -f data/spatial/wu_reference/wu_raw.h5ad data/spatial/wu_reference/wu_breast_
 - Analysis markdown: `report/breast_cancer_analysis.md`
 - Rectangle intermediates: `results/intermediate/rectangle/`
 - Rectangle diagnostics: `results/objects/deconv_rectangle_<slide>_diagnostics.json`
+- Bulk raw method outputs: `results/bulk_rnaseq/objects/`
+- Bulk merged tables: `results/bulk_rnaseq/tables/`
+- Bulk plots: `results/bulk_rnaseq/plots/`
+- Bulk analysis markdown: `report/bulk_rnaseq_analysis.md`
 
 Rectangle downstream aggregates used for plotting/tables:
 
@@ -171,6 +202,19 @@ Rectangle downstream aggregates used for plotting/tables:
 - `rectangle_caf = CAFs MSC iCAF-like + CAFs myCAF-like`
 - `rectangle_tumor = Cancer Her2 SC + Cancer LumB SC + Cancer Basal SC + Cancer LumA SC + Unknown`
 - `rectangle_bcells = B cells Memory + B cells Naive + Plasmablasts`
+
+Bulk TCGA-BRCA outputs include both:
+
+- raw method outputs as saved directly from `estimate`, `quantiseq`, `epic`, and `Rectangle`
+- aggregated comparison columns:
+  - `estimate_tumor`
+  - `quantiseq_cd8`
+  - `epic_caf`
+  - `epic_bcells`
+  - `rectangle_tumor`
+  - `rectangle_cd8`
+  - `rectangle_caf`
+  - `rectangle_bcells`
 
 ## Report Only
 
