@@ -5,6 +5,7 @@ __pycache__/
 *.pyc
 
 # Large raw/reference data artifacts
+data/TCGA_BRCA_RNAseq/
 data/reference/count_matrix_sparse.mtx
 data/reference/count_matrix_genes.tsv
 data/reference/count_matrix_barcodes.tsv
