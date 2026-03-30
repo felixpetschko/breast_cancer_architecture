@@ -27,7 +27,6 @@ Reference layout:
   - `count_matrix_genes.tsv`
   - `count_matrix_barcodes.tsv`
   - `metadata.csv`
-- Previous reference assets are kept in `data/reference_old/`.
 
 ## Run
 

@@ -12,7 +12,6 @@ data/reference/count_matrix_barcodes.tsv
 data/reference/metadata.csv
 data/reference/wu_raw.h5ad
 data/reference/wu_breast_atlas_rectangle.h5ad
-data/reference_old/
 
 # Large Rectangle intermediates
 results/intermediate/
