@@ -18,7 +18,7 @@ slides <- c(
   "4535"
 )
 
-input_files <- file.path("data", paste0("allresults_minor_", slides, ".rds"))
+input_files <- file.path("data", "spatial", "slides", paste0("allresults_minor_", slides, ".rds"))
 missing_inputs <- input_files[!file.exists(input_files)]
 if (length(missing_inputs) > 0) {
   stop(
@@ -61,7 +61,7 @@ names(all_tables) <- slides
 
 for (slide in slides) {
   message("Processing slide: ", slide)
-  in_file <- file.path("data", paste0("allresults_minor_", slide, ".rds"))
+  in_file <- file.path("data", "spatial", "slides", paste0("allresults_minor_", slide, ".rds"))
   spe <- readRDS(in_file)
 
   if ("symbol" %in% colnames(as.data.frame(rowData(spe)))) {

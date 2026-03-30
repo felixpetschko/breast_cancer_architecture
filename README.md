@@ -10,7 +10,7 @@ This repository runs a breast-cancer spatial deconvolution analysis for the 7 sl
 
 ## Data
 
-Required slide objects are stored in `data/`:
+Required spatial slide objects are stored in `data/spatial/slides/`:
 
 - `allresults_minor_andersson.rds`
 - `allresults_minor_1142243F.rds`
@@ -20,13 +20,19 @@ Required slide objects are stored in `data/`:
 - `allresults_minor_4290.rds`
 - `allresults_minor_4535.rds`
 
-Reference layout:
+Data layout:
 
-- Active raw reference files for Wu in `data/reference/`:
+- Spatial Wu reference files in `data/spatial/wu_reference/`:
   - `count_matrix_sparse.mtx`
   - `count_matrix_genes.tsv`
   - `count_matrix_barcodes.tsv`
   - `metadata.csv`
+- Bulk TCGA-BRCA files in `data/bulk_rnaseq/tcga_brca/`:
+  - `brca_tpm_all_symbols.csv`
+  - `brca_counts_all.csv`
+  - `meta_data_samples.csv`
+  - `clinical.tsv`
+  - `tcga_survival_curated_2018.csv`
 
 ## Run
 
@@ -89,27 +95,27 @@ Logs are written to `logs/slurm/%x_%j.out` and `logs/slurm/%x_%j.err`.
 conda env create -f environment/rectangle.yml
 conda activate breast-cancer-rectangle-env
 ```
-2. Keep the 4 Wu raw files in `data/reference/`:
+2. Keep the 4 Wu raw files in `data/spatial/wu_reference/`:
 
 ```bash
-ls data/reference
+ls data/spatial/wu_reference
 # count_matrix_sparse.mtx  count_matrix_genes.tsv  count_matrix_barcodes.tsv  metadata.csv
 ```
 
 3. The pipeline auto-builds these generated files if missing:
-- `data/reference/wu_raw.h5ad`
-- `data/reference/wu_breast_atlas_rectangle.h5ad`
+- `data/spatial/wu_reference/wu_raw.h5ad`
+- `data/spatial/wu_reference/wu_breast_atlas_rectangle.h5ad`
 
 Manual build remains possible:
 
 ```bash
 python3 scripts/convert_wu_matrix_to_h5ad.py \
-  --input-dir data/reference \
-  --output-h5ad data/reference/wu_raw.h5ad
+  --input-dir data/spatial/wu_reference \
+  --output-h5ad data/spatial/wu_reference/wu_raw.h5ad
 
 python3 scripts/prepare_wu_reference.py \
-  --input-h5ad data/reference/wu_raw.h5ad \
-  --output-h5ad data/reference/wu_breast_atlas_rectangle.h5ad \
+  --input-h5ad data/spatial/wu_reference/wu_raw.h5ad \
+  --output-h5ad data/spatial/wu_reference/wu_breast_atlas_rectangle.h5ad \
   --cell-type-col celltype_minor \
   --summary-json results/objects/wu_reference_summary.json
 ```
@@ -117,7 +123,7 @@ python3 scripts/prepare_wu_reference.py \
    The `excluded_cell_types` list in that config is applied during reference preparation.
    If you change this list, force rebuild by removing generated files once:
 ```bash
-rm -f data/reference/wu_raw.h5ad data/reference/wu_breast_atlas_rectangle.h5ad
+rm -f data/spatial/wu_reference/wu_raw.h5ad data/spatial/wu_reference/wu_breast_atlas_rectangle.h5ad
 ```
 
 ## Outputs
@@ -135,6 +141,7 @@ Rectangle downstream aggregates used for plotting/tables:
 - `rectangle_cd8 = T cells CD8+`
 - `rectangle_caf = CAFs MSC iCAF-like + CAFs myCAF-like`
 - `rectangle_tumor = Cancer Her2 SC + Cancer LumB SC + Cancer Basal SC + Cancer LumA SC + Unknown`
+- `rectangle_bcells = B cells Memory + B cells Naive + Plasmablasts`
 
 ## Report Only
 

@@ -42,7 +42,7 @@ harmonize_genes <- function(x, policy) {
 
 for (slide in slides) {
   message("Exporting slide: ", slide)
-  in_file <- file.path("data", paste0("allresults_minor_", slide, ".rds"))
+  in_file <- file.path("data", "spatial", "slides", paste0("allresults_minor_", slide, ".rds"))
   if (!file.exists(in_file)) {
     stop("Missing input file: ", in_file)
   }

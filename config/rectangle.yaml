@@ -1,4 +1,4 @@
-reference_path: data/reference/wu_breast_atlas_rectangle.h5ad
+reference_path: data/spatial/wu_reference/wu_breast_atlas_rectangle.h5ad
 cell_type_column: celltype_minor
 selected_cell_types: []
 excluded_cell_types:

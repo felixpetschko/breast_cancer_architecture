@@ -5,13 +5,13 @@ __pycache__/
 *.pyc
 
 # Large raw/reference data artifacts
-data/TCGA_BRCA_RNAseq/
-data/reference/count_matrix_sparse.mtx
-data/reference/count_matrix_genes.tsv
-data/reference/count_matrix_barcodes.tsv
-data/reference/metadata.csv
-data/reference/wu_raw.h5ad
-data/reference/wu_breast_atlas_rectangle.h5ad
+data/bulk_rnaseq/tcga_brca/
+data/spatial/wu_reference/count_matrix_sparse.mtx
+data/spatial/wu_reference/count_matrix_genes.tsv
+data/spatial/wu_reference/count_matrix_barcodes.tsv
+data/spatial/wu_reference/metadata.csv
+data/spatial/wu_reference/wu_raw.h5ad
+data/spatial/wu_reference/wu_breast_atlas_rectangle.h5ad
 
 # Large Rectangle intermediates
 results/intermediate/

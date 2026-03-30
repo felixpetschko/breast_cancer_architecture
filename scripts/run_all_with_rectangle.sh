@@ -14,8 +14,8 @@ GENE_SYMBOL_POLICY="${GENE_SYMBOL_POLICY:-upper}"
 CORRECT_MRNA_BIAS="${CORRECT_MRNA_BIAS:-true}"
 MIN_GENES_OVERLAP="${MIN_GENES_OVERLAP:-500}"
 N_CPUS="${N_CPUS:-}"
-RAW_H5AD_PATH="${RAW_H5AD_PATH:-data/reference/wu_raw.h5ad}"
-REFERENCE_INPUT_DIR="${REFERENCE_INPUT_DIR:-data/reference}"
+RAW_H5AD_PATH="${RAW_H5AD_PATH:-data/spatial/wu_reference/wu_raw.h5ad}"
+REFERENCE_INPUT_DIR="${REFERENCE_INPUT_DIR:-data/spatial/wu_reference}"
 EXCLUDED_CELL_TYPES=()
 
 usage() {
