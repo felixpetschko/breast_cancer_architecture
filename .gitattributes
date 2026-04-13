@@ -1,2 +1,4 @@
 data/** filter=lfs diff=lfs merge=lfs -text
 results/** filter=lfs diff=lfs merge=lfs -text
+
+tum_export/spatial_data/** filter=lfs diff=lfs merge=lfs -text
