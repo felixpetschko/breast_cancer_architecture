@@ -1,0 +1,24 @@
+Fine Annotation,Coarse Annotation
+rectangle_fine_B_cells_Memory,B cells
+rectangle_fine_B_cells_Naive,B cells
+rectangle_fine_CAFs_MSC_iCAF_like,CAFs
+rectangle_fine_CAFs_myCAF_like,CAFs
+rectangle_fine_Cancer_Basal_SC,Tumor cells
+rectangle_fine_Cancer_Her2_SC,Tumor cells
+rectangle_fine_Cancer_LumA_SC,Tumor cells
+rectangle_fine_Cancer_LumB_SC,Tumor cells
+rectangle_fine_DCs,Dendritic cells
+rectangle_fine_Endothelial_ACKR1,Endothelial cells
+rectangle_fine_Endothelial_CXCL12,Endothelial cells
+rectangle_fine_Endothelial_Lymphatic_LYVE1,Endothelial cells
+rectangle_fine_Endothelial_RGS5,Endothelial cells
+rectangle_fine_Macrophage,Macrophages
+rectangle_fine_Monocyte,Monocytes
+rectangle_fine_NK_cells,NK cells
+rectangle_fine_NKT_cells,REMOVE
+rectangle_fine_PVL_Differentiated,PVL
+rectangle_fine_PVL_Immature,PVL
+rectangle_fine_Plasmablasts,B cells
+rectangle_fine_T_cells_CD4,T cells
+rectangle_fine_T_cells_CD8,T cells
+rectangle_fine_Unknown,Tumor cells
