@@ -6,6 +6,7 @@ __pycache__/
 
 # Large raw/reference data artifacts
 data/bulk_rnaseq/tcga_brca/
+data/tls/combined_obj.RData
 data/zenodo/
 data/spatial/wu_reference/count_matrix_sparse.mtx
 data/spatial/wu_reference/count_matrix_genes.tsv
