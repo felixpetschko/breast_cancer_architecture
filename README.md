@@ -35,6 +35,9 @@ Data layout:
   - `meta_data_samples.csv`
   - `clinical.tsv`
   - `tcga_survival_curated_2018.csv`
+- Bulk CPTAC-BRCA files in `data/bulk_rnaseq/cptac_brca/`:
+  - `tpm_matrix_gene_id_name.csv`
+  - `cptac_brca_tpm_gene_symbols.csv` (generated; uses gene symbols and resolves duplicated symbols by highest mean TPM)
 
 Source links:
 
@@ -75,6 +78,20 @@ scripts/run_bulk_tcga_brca.sh --mode immunedeconv
 scripts/run_bulk_tcga_brca.sh --mode rectangle
 scripts/run_bulk_tcga_brca.sh --mode merge
 scripts/run_bulk_tcga_brca.sh --mode report
+```
+
+Bulk CPTAC-BRCA workflow:
+
+```bash
+# Full CPTAC workflow: prepare + immunedeconv + Rectangle + merge + export
+scripts/run_bulk_cptac_brca.sh --mode all --n-cpus 32
+
+# Individual CPTAC stages
+scripts/run_bulk_cptac_brca.sh --mode prepare
+scripts/run_bulk_cptac_brca.sh --mode immunedeconv
+scripts/run_bulk_cptac_brca.sh --mode rectangle --n-cpus 32
+scripts/run_bulk_cptac_brca.sh --mode merge
+scripts/run_bulk_cptac_brca.sh --mode export
 ```
 
 The runner prints live progress from R/Python commands via `conda run --no-capture-output`.
@@ -200,6 +217,8 @@ rm -f data/spatial/wu_reference/wu_raw.h5ad data/spatial/wu_reference/wu_breast_
 - Bulk merged tables: `results/bulk_rnaseq/tables/`
 - Bulk plots: `results/bulk_rnaseq/plots/`
 - Bulk analysis markdown: `report/bulk_rnaseq_analysis.md`
+- CPTAC bulk workflow outputs: `results/bulk_rnaseq/cptac_brca/`
+- CPTAC export table: `tum_export/deconvolution_results/CPTAC_BRCA_bulk_deconvolution_results_aggregated_rectangle_cell_types.csv`
 
 Rectangle downstream aggregates used for plotting/tables:
 
