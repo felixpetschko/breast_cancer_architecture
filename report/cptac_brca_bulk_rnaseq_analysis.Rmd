@@ -1,0 +1,154 @@
+---
+title: "Breast Cancer Architecture Bulk RNA-seq Analysis (CPTAC-BRCA)"
+output: github_document
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(knitr)
+library(jsonlite)
+
+dir.create("../results/bulk_rnaseq/cptac_brca/plots", recursive = TRUE, showWarnings = FALSE)
+
+raw_tab <- read.csv("../results/bulk_rnaseq/cptac_brca/tables/cptac_brca_all_methods_raw.csv", check.names = FALSE)
+tab <- read.csv("../results/bulk_rnaseq/cptac_brca/tables/cptac_brca_all_methods_aggregated.csv", check.names = FALSE)
+export_tab <- read.csv("../tum_export/deconvolution_results/CPTAC_BRCA_bulk_deconvolution_results_aggregated_rectangle_cell_types.csv", check.names = FALSE)
+prep_diag <- fromJSON("../results/bulk_rnaseq/cptac_brca/intermediate/cptac_brca_input_summary.json")
+rect_diag <- fromJSON("../results/bulk_rnaseq/cptac_brca/objects/deconv_rectangle_cptac_brca_diagnostics.json")
+```
+
+## Methods
+
+- Input dataset: `data/bulk_rnaseq/cptac_brca/tpm_matrix_gene_id_name.csv`
+- `gene_id` / Ensembl identifiers were removed from the analysis matrix.
+- `gene_name` was used as the gene symbol identifier.
+- Duplicated gene symbols were resolved by keeping the row with the highest mean TPM across all samples.
+- 1st generation methods were run through `immunedeconv`:
+  - `estimate`
+  - `quantiseq`
+  - `epic`
+- 2nd generation method:
+  - `Rectangle`
+- Rectangle used the existing Wu reference and current `config/rectangle.yaml`.
+- No CPTAC clinical/PAM50/survival metadata were joined in this workflow.
+
+## Dataset Summary
+
+```{r dataset-summary}
+summary_df <- data.frame(
+  metric = c(
+    "n samples",
+    "n input rows",
+    "n unique gene symbols",
+    "n duplicate rows removed",
+    "n raw merged columns",
+    "n aggregated columns",
+    "n export columns",
+    "Rectangle gene overlap",
+    "Rectangle CPUs"
+  ),
+  value = c(
+    prep_diag$n_samples,
+    prep_diag$n_rows_input,
+    prep_diag$n_rows_after_duplicate_resolution,
+    prep_diag$n_duplicate_rows_removed,
+    ncol(raw_tab),
+    ncol(tab),
+    ncol(export_tab),
+    rect_diag$n_genes_overlap,
+    rect_diag$n_cpus
+  )
+)
+kable(summary_df)
+```
+
+## Output Preview
+
+```{r output-preview}
+kable(head(export_tab, 10))
+```
+
+## Method Comparison
+
+```{r comparison-summary, fig.width=6, fig.height=5}
+mk_scatter <- function(df, x, y, title, xlab, ylab, out_png) {
+  d <- data.frame(x = as.numeric(df[[x]]), y = as.numeric(df[[y]]))
+  d <- d[complete.cases(d), , drop = FALSE]
+  r <- if (nrow(d) > 1) cor(d$x, d$y, method = "pearson") else NA_real_
+  p <- ggplot(d, aes(x = x, y = y)) +
+    geom_point(size = 1.4, alpha = 0.7) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+    labs(
+      title = title,
+      subtitle = paste0("Pearson r = ", ifelse(is.na(r), "NA", sprintf("%.3f", r))),
+      x = xlab,
+      y = ylab
+    ) +
+    theme_bw(base_size = 11)
+  ggsave(out_png, p, width = 6, height = 5, dpi = 300, bg = "white")
+  print(p)
+  invisible(r)
+}
+
+comparisons <- data.frame(
+  metric = c("Tumor", "CD8", "CAF", "B cells"),
+  method = c("ESTIMATE", "quanTIseq", "EPIC", "EPIC"),
+  x = c("estimate_tumor", "quantiseq_cd8", "epic_caf", "epic_bcells"),
+  y = c("rectangle_tumor", "rectangle_T.cells.CD8.", "rectangle_caf", "rectangle_bcells"),
+  stringsAsFactors = FALSE
+)
+
+cors <- numeric(nrow(comparisons))
+for (i in seq_len(nrow(comparisons))) {
+  row <- comparisons[i, ]
+  png_path <- file.path("../results/bulk_rnaseq/cptac_brca/plots", paste0("cptac_brca_", make.names(row$metric), "_scatter.png"))
+  cors[[i]] <- mk_scatter(
+    tab, row$x, row$y,
+    paste0("CPTAC-BRCA ", row$metric, ": ", row$method, " vs Rectangle"),
+    paste0("1st-gen ", row$metric),
+    paste0("Rectangle ", row$metric),
+    png_path
+  )
+}
+```
+
+```{r correlation-table}
+comparisons$pearson_r <- cors
+kable(comparisons[, c("metric", "method", "x", "y", "pearson_r")])
+```
+
+## Rectangle Export Checks
+
+```{r rectangle-export-checks}
+agg_cols <- grep("^rectangle_aggregated_", colnames(export_tab), value = TRUE)
+sum_with_removed <- rowSums(export_tab[, agg_cols, drop = FALSE], na.rm = TRUE) + tab[["rectangle_NKT.cells"]]
+check_df <- data.frame(
+  metric = c(
+    "n rectangle aggregated export columns",
+    "n fine rectangle export columns",
+    "n old coarse rectangle export columns",
+    "min aggregated + removed NKT",
+    "max aggregated + removed NKT"
+  ),
+  value = c(
+    length(agg_cols),
+    sum(grepl("^rectangle_fine_", colnames(export_tab))),
+    sum(colnames(export_tab) %in% c("rectangle_tumor", "rectangle_cd8", "rectangle_caf", "rectangle_bcells")),
+    min(sum_with_removed, na.rm = TRUE),
+    max(sum_with_removed, na.rm = TRUE)
+  )
+)
+kable(check_df)
+```
+
+## Notes
+
+EPIC reported incomplete optimization convergence for five CPTAC samples:
+`05BR042`, `11BR036`, `01BR027`, `14BR005`, and `18BR004`.
+Their `epic_caf` and `epic_bcells` values were within the observed CPTAC range, but these samples should be flagged for EPIC-specific interpretation.
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```
