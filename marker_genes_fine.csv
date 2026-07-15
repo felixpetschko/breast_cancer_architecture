@@ -1,0 +1,11 @@
+Cell Type,Marker 1,Marker 2,Marker 3
+B cells,CD79A,MS4A1,CD19
+CAFs,COL1A1,DCN,ACTA2
+Tumor cells,EPCAM,KRT8,KRT18
+Dendritic cells,CD1C,FCER1A,CLEC10A
+Endothelial cells,CLDN5,PLVAP,SPARCL1
+Macrophages,C1QA,CD68,TREM2
+Monocytes,S100A9,LYZ,FCN1
+NK cells,GNLY,XCL2,NKG7
+PVL,RGS5,PDGFRB,MCAM
+T cells,CD3D,CD4,CD8A
